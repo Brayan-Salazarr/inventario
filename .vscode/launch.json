@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-BrayanApplication<brayan>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.InventarioBicicletas.BrayanApplication",
+            "projectName": "brayan",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
