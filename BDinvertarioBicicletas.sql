@@ -12,3 +12,9 @@ precio double not null,
 categoria varchar(10) not null,
 stock int
 );
+
+create table usuarios(
+    id int auto_increment primary key,
+    usuario varchar(50),
+    contraseña varchar(100)
+);
