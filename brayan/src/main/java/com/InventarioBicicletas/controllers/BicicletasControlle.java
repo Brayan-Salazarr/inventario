@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.InventarioBicicletas.dto.BicicletaDTO;
 import com.InventarioBicicletas.entity.BicicletasEntity;
+import com.InventarioBicicletas.security.JwtUtil;
 import com.InventarioBicicletas.services.BicicletaService;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 
 
@@ -26,66 +28,118 @@ public class BicicletasControlle {
     @Autowired
     private BicicletaService bicicletaService;
 
+    private boolean validarToken(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return false;
+        }
+        String token = authHeader.replace("Bearer ", "");
+        return JwtUtil.validarToken(token);
+    }
+
+    //  Listar bicicletas 
     @GetMapping()
-    public ResponseEntity<List<BicicletaDTO>> listarBicicletas(){
+    public ResponseEntity<?> listarBicicletas(@RequestHeader("Authorization") String authHeader) {
+        if (!validarToken(authHeader)) {
+            return ResponseEntity.status(401).body("Token inválido o expirado");
+        }
         List<BicicletaDTO> bicicletas = bicicletaService.listaBicicletas();
         return ResponseEntity.ok(bicicletas);
     }
-
+    //  Crear bicicleta
     @PostMapping()
-    public ResponseEntity<BicicletaDTO> crearBicicleta(@RequestBody BicicletaDTO bicicletaDTO){
+    public ResponseEntity<?> crearBicicleta(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody BicicletaDTO bicicletaDTO) {
+        if (!validarToken(authHeader)) {
+            return ResponseEntity.status(401).body("Token inválido o expirado");
+        }
         BicicletaDTO guardar = bicicletaService.agregarBicicletas(bicicletaDTO);
         return ResponseEntity.ok(guardar);
     }
-        
-     @PutMapping("/{id}")
-    public ResponseEntity<BicicletaDTO> actualizarBicicleta(@PathVariable Long id,
+
+    // Actualizar bicicleta
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarBicicleta(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long id,
             @RequestBody BicicletasEntity bicicletaEntity) {
+        if (!validarToken(authHeader)) {
+            return ResponseEntity.status(401).body("Token inválido o expirado");
+        }
+
         BicicletaDTO bicicletaActualizada = bicicletaService.actualizarBicicleta(id, bicicletaEntity);
-        return ResponseEntity.ok(bicicletaActualizada);
+        if (bicicletaActualizada != null) {
+            return ResponseEntity.ok(bicicletaActualizada);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
+    //  Eliminar bicicleta
     @DeleteMapping("/{id}")
-    public ResponseEntity<BicicletaDTO> eliminarBicicleta(@PathVariable Long id) {
-        BicicletaDTO eliminado = bicicletaService.eliminarBicicleta(id);
+    public ResponseEntity<?> eliminarBicicleta(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long id) {
+        if (!validarToken(authHeader)) {
+            return ResponseEntity.status(401).body("Token inválido o expirado");
+        }
 
-        if (id != null) {
+        BicicletaDTO eliminado = bicicletaService.eliminarBicicleta(id);
+        if (eliminado != null) {
             return ResponseEntity.ok(eliminado);
         } else {
-            return null;
+            return ResponseEntity.notFound().build();
         }
     }
 
+    //  Buscar por ID
     @GetMapping("/id/{id}")
-    public ResponseEntity<BicicletaDTO> encontrarBicicleta(@PathVariable Long id) {
-        BicicletaDTO bicicleta = bicicletaService.encontrarBicicleta(id);
+    public ResponseEntity<?> encontrarBicicleta(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long id) {
+        if (!validarToken(authHeader)) {
+            return ResponseEntity.status(401).body("Token inválido o expirado");
+        }
 
-        if (id != null) {
+        BicicletaDTO bicicleta = bicicletaService.encontrarBicicleta(id);
+        if (bicicleta != null) {
             return ResponseEntity.ok(bicicleta);
         } else {
-            return null;
+            return ResponseEntity.notFound().build();
         }
     }
 
+    //  Buscar por tipo
     @GetMapping("/tipo/{tipo}")
-    public ResponseEntity<List<BicicletaDTO>> encontrarBicicletaTipo(@PathVariable String tipo) {
-       List<BicicletaDTO> bicicletaTipo = bicicletaService.encontrarBicicletaTipo(tipo);
+    public ResponseEntity<?> encontrarBicicletaTipo(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable String tipo) {
+        if (!validarToken(authHeader)) {
+            return ResponseEntity.status(401).body("Token inválido o expirado");
+        }
 
-        if (tipo != null) {
+        List<BicicletaDTO> bicicletaTipo = bicicletaService.encontrarBicicletaTipo(tipo);
+        if (bicicletaTipo != null && !bicicletaTipo.isEmpty()) {
             return ResponseEntity.ok(bicicletaTipo);
         } else {
-            return null;
+            return ResponseEntity.notFound().build();
         }
     }
 
+    //  Buscar por categoría
     @GetMapping("/categoria/{categoria}")
-    public ResponseEntity<List<BicicletaDTO>> encontrarBicicletaCate(@PathVariable String categoria) {
-       List<BicicletaDTO> bicicletaCate = bicicletaService.encontrarBicicletaCate(categoria);
+    public ResponseEntity<?> encontrarBicicletaCate(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable String categoria) {
+        if (!validarToken(authHeader)) {
+            return ResponseEntity.status(401).body("Token inválido o expirado");
+        }
 
-        if (categoria != null) {
+        List<BicicletaDTO> bicicletaCate = bicicletaService.encontrarBicicletaCate(categoria);
+        if (bicicletaCate != null && !bicicletaCate.isEmpty()) {
             return ResponseEntity.ok(bicicletaCate);
         } else {
-            return null;
+            return ResponseEntity.notFound().build();
         }
     }
     
